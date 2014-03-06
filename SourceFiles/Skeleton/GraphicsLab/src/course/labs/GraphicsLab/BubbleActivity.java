@@ -137,7 +137,7 @@ public class BubbleActivity extends Activity {
 				if(mFrame.getChildCount()>0){//check to see if there are any bubbles
 					if(event1.getActionMasked() == MotionEvent.ACTION_DOWN){
 						for(int i=0;i<mFrame.getChildCount();i++){
-							if(mFrame.getChildAt(i).)
+							//BubbleView bubbleview = new 
 							
 							
 						}
@@ -162,8 +162,13 @@ public class BubbleActivity extends Activity {
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
 
-
 				
+				if(mFrame.getChildCount()>0){
+					for(int i=0;i<mFrame.getChildCount();i++){
+						mFrame.getChildAt(i).
+						
+					}
+				}
 				
 				
 				
@@ -183,13 +188,7 @@ public class BubbleActivity extends Activity {
 
 		// TODO - delegate the touch to the gestureDetector 
 
-		
-		
-		
-		
-		
-		
-		return false;
+		return mGestureDetector.onTouchEvent(event);
 	
 	}
 
@@ -197,13 +196,10 @@ public class BubbleActivity extends Activity {
 	protected void onPause() {
 		
 		// TODO - Release all SoundPool resources
+		
 
-
-		
-		
-		
-		
-		
+		mSoundPool.release();
+		mSoundPool.unload(mSoundID);		
 		
 		
 		super.onPause();
@@ -256,7 +252,7 @@ public class BubbleActivity extends Activity {
 			if (speedMode == RANDOM) {
 				
 				// TODO - set rotation in range [1..3]
-				mDRotate = 0;
+				mDRotate = r.nextInt(3)+1;
 
 				
 			} else {
@@ -290,11 +286,8 @@ public class BubbleActivity extends Activity {
 				// TODO - Set movement direction and speed
 				// Limit movement speed in the x and y
 				// direction to [-3..3].
-
-
-			
-			
-			
+				mDx = r.nextInt(7)-3;
+				mDy = r.nextInt(7)-3;		
 			
 			
 			}
@@ -309,12 +302,12 @@ public class BubbleActivity extends Activity {
 			} else {
 			
 				//TODO - set scaled bitmap size in range [1..3] * BITMAP_SIZE
-				mScaledBitmapWidth = 0;
+				mScaledBitmapWidth = BITMAP_SIZE * (r.nextInt(3)+1);
 			
 			}
 
 			// TODO - create the scaled bitmap using size set above
-			mScaledBitmap = null;
+			mScaledBitmap = Bitmap.createScaledBitmap(mBitmap, mScaledBitmapWidth, mScaledBitmapWidth, false);
 		}
 
 		// Start moving the BubbleView & updating the display
@@ -335,7 +328,12 @@ public class BubbleActivity extends Activity {
 					// move one step. If the BubbleView exits the display, 
 					// stop the BubbleView's Worker Thread. 
 					// Otherwise, request that the BubbleView be redrawn. 
-					
+					if(moveWhileOnScreen()){
+						stop(!isOutOfView());
+					}
+					else{
+						
+					}
 
 					
 					
