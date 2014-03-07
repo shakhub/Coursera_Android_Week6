@@ -133,12 +133,16 @@ public class BubbleActivity extends Activity {
 				// TODO - Implement onFling actions.
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
-				
+				BubbleView bubble ;
 				if(mFrame.getChildCount()>0){//check to see if there are any bubbles
 					if(event1.getActionMasked() == MotionEvent.ACTION_DOWN){
 						for(int i=0;i<mFrame.getChildCount();i++){
-							//BubbleView bubbleview = new 
+							bubble = (BubbleView) mFrame.getChildAt(i);
 							
+							if(bubble.intersects(event1.getRawX(), event1.getRawY())){
+								bubble.deflect(velocityX, velocityY);
+								return true;
+							}							
 							
 						}
 					}
@@ -162,20 +166,30 @@ public class BubbleActivity extends Activity {
 				// You can get all Views in mFrame using the
 				// ViewGroup.getChildCount() method
 
-				
+				BubbleView bubbles;
 				if(mFrame.getChildCount()>0){
 					for(int i=0;i<mFrame.getChildCount();i++){
-						mFrame.getChildAt(i).
-						
+						bubbles = (BubbleView) mFrame.getChildAt(i);
+						if(bubbles.intersects(event.getRawX(), event.getRawY())){
+							bubbles.stop(true);
+							
+						}
+						else{
+							bubbles = new BubbleView(getApplicationContext(),event.getRawX(),event.getRawY());
+							mFrame.addView(bubbles);
+							bubbles.start();
+							
+						}
+						return true;
 					}
+					
 				}
-				
-				
-				
-				
-				
-				
-				
+				else{
+					bubbles = new BubbleView(getApplicationContext(),event.getRawX(),event.getRawY());
+					mFrame.addView(bubbles);
+					bubbles.start();
+					return true;
+				}	
 				
 				
 				return false;
@@ -332,12 +346,9 @@ public class BubbleActivity extends Activity {
 						stop(!isOutOfView());
 					}
 					else{
+						postInvalidate();
 						
-					}
-
-					
-					
-					
+					}				
 					
 				}
 			}, 0, REFRESH_RATE, TimeUnit.MILLISECONDS);
@@ -346,7 +357,11 @@ public class BubbleActivity extends Activity {
 		private synchronized boolean intersects(float x, float y) {
 
 			// TODO - Return true if the BubbleView intersects position (x,y)
-
+			if(Math.hypot((mXPos+mScaledBitmapWidth/2-x),(mYPos+mScaledBitmapWidth/2-y)) <= mScaledBitmapWidth){
+				return true;
+			}
+			
+			
 			return false;
 		}
 
@@ -365,7 +380,7 @@ public class BubbleActivity extends Activity {
 					public void run() {
 						
 						// TODO - Remove the BubbleView from mFrame
-
+						mFrame.removeView(BubbleView.this);
 
 						
 						
@@ -374,7 +389,7 @@ public class BubbleActivity extends Activity {
 
 							// TODO - If the bubble was popped by user,
 							// play the popping sound
-
+							mSoundPool.play(mSoundID, mStreamVolume, mStreamVolume, 0, 0, 1);
 						
 						}
 
@@ -391,8 +406,8 @@ public class BubbleActivity extends Activity {
 
 			//TODO - set mDx and mDy to be the new velocities divided by the REFRESH_RATE
 			
-			mDx = 0;
-			mDy = 0;
+			mDx = velocityX/REFRESH_RATE;
+			mDy = velocityY/REFRESH_RATE;
 
 		}
 
@@ -401,22 +416,22 @@ public class BubbleActivity extends Activity {
 		protected synchronized void onDraw(Canvas canvas) {
 
 			// TODO - save the canvas
-
+			canvas.save();
 
 			// TODO - increase the rotation of the original image by mDRotate
-
+			mRotate = (mRotate + mDRotate)%360;
 
 			
 			// TODO Rotate the canvas by current rotation
-
+			canvas.rotate(mRotate, mXPos+mScaledBitmapWidth/2, mYPos+mScaledBitmapWidth/2);
 			
 			
 			// TODO - draw the bitmap at it's new location
-			
+			canvas.drawBitmap(mScaledBitmap, mXPos, mYPos, mPainter);
 
 			
 			// TODO - restore the canvas
-
+			canvas.restore();
 
 			
 		}
@@ -426,10 +441,12 @@ public class BubbleActivity extends Activity {
 
 			// TODO - Move the BubbleView
 			// Returns true if the BubbleView has exited the screen
-
-
+			mXPos +=mDx;
+			mYPos +=mDy;
 			
-			
+			if(isOutOfView()){
+				return true;
+			}
 			return false;
 
 		}
@@ -437,7 +454,9 @@ public class BubbleActivity extends Activity {
 		private boolean isOutOfView() {
 
 			// TODO - Return true if the BubbleView has exited the screen
-
+			if((mXPos+mScaledBitmapWidth)<0 || mXPos>mDisplayWidth || (mYPos+mScaledBitmapWidth)<0 || mYPos>mDisplayHeight){
+				return true;
+			}			
 			return false;
 
 		}
